@@ -16,38 +16,33 @@ require 'etc'
 #
 users = {}
 homedir_users = Facter.value(:homedir_users)
-if homedir_users != nil and homedir_users.size > 0
+if !homedir_users.nil && !homedir_users.empty?
   homedir_users.each do |u|
-    begin
-      pw = Etc.getpwnam(u)
-      user = pw.name
-      homedir = pw.dir
-      key = false
-
-      if File.exists?("#{homedir}/.ssh/id_rsa.pub")
-        key = IO.read("#{homedir}/.ssh/id_rsa.pub")
-      elsif File.exists?("#{homedir}/.ssh/id_dsa.pub")
-        key = IO.read("#{homedir}/.ssh/id_dsa.pub")
-      end
-      if key
-        users[user] = key
-      end
-    rescue
-      next
+    pw = Etc.getpwnam(u)
+    user = pw.name
+    homedir = pw.dir
+    key = false
+    if File.exist?("#{homedir}/.ssh/id_rsa.pub")
+      key = IO.read("#{homedir}/.ssh/id_rsa.pub")
+    elsif File.exist?("#{homedir}/.ssh/id_dsa.pub")
+      key = IO.read("#{homedir}/.ssh/id_dsa.pub")
     end
+    if key
+      users[user] = key
+    end
+  rescue
+    next
   end
 else
   Etc.passwd do |pw|
     user = pw.name
     homedir = pw.dir
     key = false
-
-    if File.exists?("#{homedir}/.ssh/id_rsa.pub")
+    if File.exist?("#{homedir}/.ssh/id_rsa.pub")
       key = IO.read("#{homedir}/.ssh/id_rsa.pub")
-    elsif File.exists?("#{homedir}/.ssh/id_dsa.pub")
+    elsif File.exist?("#{homedir}/.ssh/id_dsa.pub")
       key = IO.read("#{homedir}/.ssh/id_dsa.pub")
     end
-
     if key
       users[user] = key
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'etc'
 
 # First get a list of users via the homedir_users fact
@@ -16,25 +18,23 @@ require 'etc'
 #
 users = {}
 homedir_users = Facter.value(:homedir_users)
-if homedir_users != nil and homedir_users.size > 0
-  homedir_users.each do |u|
-    begin
-      user = Etc.getpwnam(u)
-      users[user.name] = user.dir
-    rescue
-      next
-    end
+if !homedir_users.nil? && !homedir_users.empty?
+  begin
+    user = Etc.getpwnam(u)
+    users[user.name] = user.dir
+  rescue
+    next
   end
 else
-  Etc.passwd do |user|
-    users[user.name] = user.dir
+  Etc.passwd do |sshuser|
+    users[sshuser.name] = sshuser.dir
   end
 end
 
 users.each do |user_name, user_dir|
-   Facter.add("home_#{user_name}") do
-      setcode do
-         user_dir
-      end
-   end
+  Facter.add("home_#{user_name}") do
+    setcode do
+      user_dir
+    end
+  end
 end

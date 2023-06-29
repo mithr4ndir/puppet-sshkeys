@@ -25,14 +25,13 @@
 #     Default: true
 #
 define sshkeys::set_authorized_key (
-  $local_user,
-  $remote_user,
-  $ensure   = 'present',
-  $options  = undef,
-  $target   = undef,
-  $downcase = true
+  String $local_user,
+  String $remote_user,
+  String $ensure                  = 'present',
+  Variant[Undef,String] $options  = undef,
+  Variant[Undef,String] $target   = undef,
+  Boolean $downcase               = true
 ) {
-
   # Parse the name
   $parts = split($remote_user, '@')
   $remote_username = $parts[0]
