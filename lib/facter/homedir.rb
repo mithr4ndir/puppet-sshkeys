@@ -19,7 +19,7 @@ require 'etc'
 users = {}
 homedir_users = Facter.value(:homedir_users)
 if !homedir_users.nil? && !homedir_users.empty?
-  begin
+  homedir_users.each do |u|
     user = Etc.getpwnam(u)
     users[user.name] = user.dir
   rescue
