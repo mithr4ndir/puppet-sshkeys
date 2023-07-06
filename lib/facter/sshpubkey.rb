@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'etc'
 
 # First get a list of users via the homedir_users fact
@@ -16,15 +18,15 @@ require 'etc'
 #
 users = {}
 homedir_users = Facter.value(:homedir_users)
-if !homedir_users.nil && !homedir_users.empty?
+if !homedir_users.nil? && !homedir_users.empty?
   homedir_users.each do |u|
     pw = Etc.getpwnam(u)
-    user = pw.name
+    user = pw.name.gsub(%r{[^a-zA-Z0-9_]}, '')
     homedir = pw.dir
     key = false
-    if File.exists?("#{homedir}/.ssh/id_rsa.pub")
+    if File.exist?("#{homedir}/.ssh/id_rsa.pub")
       key = IO.read("#{homedir}/.ssh/id_rsa.pub")
-    elsif File.exists?("#{homedir}/.ssh/id_dsa.pub")
+    elsif File.exist?("#{homedir}/.ssh/id_dsa.pub")
       key = IO.read("#{homedir}/.ssh/id_dsa.pub")
     end
     if key
@@ -38,9 +40,9 @@ else
     user = pw.name
     homedir = pw.dir
     key = false
-    if File.exists?("#{homedir}/.ssh/id_rsa.pub")
+    if File.exist?("#{homedir}/.ssh/id_rsa.pub")
       key = IO.read("#{homedir}/.ssh/id_rsa.pub")
-    elsif File.exists?("#{homedir}/.ssh/id_dsa.pub")
+    elsif File.exist?("#{homedir}/.ssh/id_dsa.pub")
       key = IO.read("#{homedir}/.ssh/id_dsa.pub")
     end
     if key
