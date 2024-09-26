@@ -66,20 +66,19 @@ define sshkeys::set_authorized_key (
         ensure => absent,
       }
     } else {
-      # Get the key
-      if $remote_node =~ /\./ {
-        $results = query_facts("fqdn=\"${remote_node}\"", ["sshpubkey_${remote_username}"])
-      } else {
-        $results = query_facts("hostname=\"${remote_node}\"", ["sshpubkey_${remote_username}"])
-      }
-      if $results_node in $results {
-        $key = $results[$results_node]["sshpubkey_${remote_username}"]
-        if ($key !~ /^(ssh-...) ([^ ]*)/) {
-          err("Can't parse key from ${remote_user}")
-          notify { "Can't parse key from ${remote_user}. Skipping": }
+      # Query for the sshpubkey
+      $query = "facts[certname, value] { name = 'sshpubkey_${remote_username}' and certname in inventory[certname] { certname ~ '${remote_node}'}}"
+ 
+      # Execute the PuppetDB query
+      $results = puppetdb_query($query)
+      # Process the results
+      if $results and length($results) > 0 {
+        $key = split($results[0]['value'], ' ') # look at the 
+        if ($key[0] !~ /^(ssh-...)/) {
+          err("Can't parse key for ${remote_username}")
         } else {
-          $keytype = $1
-          $modulus = $2
+          $keytype = $key[0]
+          $modulus = $key[1]
           ssh_authorized_key { $name:
             ensure  => $ensure,
             type    => $keytype,
@@ -88,7 +87,7 @@ define sshkeys::set_authorized_key (
           }
         }
       } else {
-        notify { "Public key from ${remote_username}@${remote_node} (for local user ${local_user}) not available yet. Skipping": }
+        notify { "No SSH key found for ${remote_username} on ${remote_node}": }
       }
     }
   }
